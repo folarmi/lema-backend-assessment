@@ -15,10 +15,31 @@ app.get("/users", (req, res) => {
   const limit = parseInt(req.query.limit || 10);
   const offset = (page - 1) * limit;
 
+  // Get total number of users
+  const total = db.prepare("SELECT COUNT(*) as count FROM users").get().count;
+
+  // Get users for this page
   const users = db
     .prepare("SELECT * FROM users LIMIT ? OFFSET ?")
     .all(limit, offset);
-  res.json(users);
+
+  // Prepare address lookup query
+  const getAddress = db.prepare("SELECT * FROM addresses WHERE user_id = ?");
+
+  // Combine user with address
+  const usersWithAddresses = users.map((user) => ({
+    ...user,
+    address: getAddress.get(user.id) || null,
+  }));
+
+  // Send both data and total count
+  res.json({
+    data: usersWithAddresses,
+    total,
+    page,
+    limit,
+    totalPages: Math.ceil(total / limit),
+  });
 });
 
 // Get user details by ID
@@ -37,11 +58,27 @@ app.get("/users/:userId/posts", (req, res) => {
   const page = parseInt(req.query.page || 1);
   const limit = parseInt(req.query.limit || 4);
   const offset = (page - 1) * limit;
+  const userId = req.params.userId;
 
+  // Get paginated posts
   const posts = db
     .prepare("SELECT * FROM posts WHERE user_id = ? LIMIT ? OFFSET ?")
-    .all(req.params.userId, limit, offset);
-  res.json(posts);
+    .all(userId, limit, offset);
+
+  // Get total count of posts for this user
+  const total = db
+    .prepare("SELECT COUNT(*) AS count FROM posts WHERE user_id = ?")
+    .get(userId).count;
+
+  const totalPages = Math.ceil(total / limit);
+
+  res.json({
+    data: posts,
+    total,
+    page,
+    limit,
+    totalPages,
+  });
 });
 
 // Delete a post

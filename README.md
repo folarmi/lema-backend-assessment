@@ -1,13 +1,206 @@
-# Express + SQLite Backend API
+<!-- # Node.js + Express + TypeScript + SQLite Backend
 
-This project is a RESTful backend built with Express.js and TypeScript. It uses SQLite (via better-sqlite3) as the database, with features including input validation using Zod, security headers via Helmet, and origin whitelisting using CORS. The application exposes endpoints for managing users and their posts, with pagination and proper error handling. To run the project, first create a `.env` file in the root directory and set the following environment variables: PORT (default is 4000), DB_PATH (default is ./data/data.db), and ALLOWED_ORIGINS (comma-separated list of whitelisted origins for CORS). Install dependencies using `npm install`, then start the server with `npm run dev` or `node dist/server.js` if compiled. The server will be available at http://localhost:4000 or the specified PORT.
+This is a simple backend server for handling blog posts and users, built with Express, TypeScript, and SQLite using `better-sqlite3`.
 
-Available endpoints include GET /users for listing users with pagination (query parameters: page and limit), GET /users/:userId to fetch a single user by ID, GET /users/:userId/posts to list posts belonging to a user with pagination, POST /posts to create a new post (requires userId, title, and body in the request body), and DELETE /posts/:postId to delete a post. All input is validated with Zod, and error messages are descriptive and structured. The application applies Helmet for basic security best practices, and uses better-sqlite3 for synchronous and performant database access. User addresses are fetched from the addresses table and embedded into the user objects. If a user or post is not found, the API returns a 404 status code. All errors are caught by a global error handler which, in development mode, includes the stack trace in the response.
+## 🚀 Features
 
-The project structure includes a `data` folder for the SQLite database file, a `.env` file for configuration, and a `server.ts` file as the main entry point. The API uses Express’s JSON middleware, and CORS is configured to accept requests only from the allowed origins listed in the environment variables. Pagination logic is included for both users and posts endpoints, computing offset and total pages based on provided or default page and limit values. If invalid parameters are passed, the response includes a 400 status code and detailed validation errors. When creating a post, the server checks that the user exists before inserting the post into the database. Responses include metadata like total records, page number, limit, and totalPages to help clients implement pagination.
+- REST API (CRUD for Posts and Users)
+- SQLite database (embedded, no external setup)
+- Zod-based input validation
+- CORS protection with environment-based origin config
+- Secure headers with Helmet
+- Custom error handler
+- Timestamps for post creation (`created_at` field)
 
-To use this project, ensure that the SQLite database is created and seeded with appropriate tables: users, posts, and addresses. The users table should contain at least id, name, and other basic fields. The posts table must contain id, user_id, title, body, and created_at. The addresses table should include user_id as a foreign key and fields like street, city, or zip. The API automatically attaches each user’s address from the addresses table when returning user data. The response from the POST /posts endpoint includes the full post record after insertion. All timestamps are in ISO 8601 format. The DELETE /posts/:postId endpoint returns whether a record was deleted based on the affected rows count.
+## 🔧 Setup Instructions
 
-This backend is ideal for lightweight applications or admin panels where simplicity, speed, and validation are required. It does not include authentication, but can be extended to do so. The entire project uses minimal dependencies for performance and maintainability. Example environment configuration: PORT=4000, DB_PATH=./data/data.db, ALLOWED_ORIGINS=http://localhost:3000,http://yourfrontend.com. Folder structure: the `data/` folder contains your SQLite file, and everything runs from a single `server.ts` or compiled JavaScript file. Error responses follow a consistent JSON format with keys for status, message, method, path, timestamp, and optional stack trace (in development mode only). CORS errors are descriptive and follow the standard Express error flow.
+1. **Clone the repository and navigate into the backend folder:**
 
-MIT licensed. Free to use, modify, and distribute.
+```bash
+git clone https://github.com/folarmi/lema-backend-assessment.git
+cd lema-backend-assessment
+```'' -->
+
+Social Media Backend API
+This project is a Node.js backend API built with Express.js and SQLite for managing users and posts in a social media application. It includes features like user management, post creation, deletion, and pagination, with security features and input validation.
+Table of Contents
+
+Features
+Tech Stack
+Prerequisites
+Installation
+Configuration
+Database Setup
+Running the Application
+API Endpoints
+Error Handling
+Contributing
+License
+
+Features
+
+User Management: Retrieve user details and list users with pagination.
+Post Management: Create, delete, and list posts for specific users with pagination.
+Security: Implements CORS, Helmet for HTTP headers, and input validation/sanitization using Zod.
+Error Handling: Centralized error handling with detailed responses, including stack traces in development mode.
+Environment Configuration: Uses dotenv for environment variable management.
+
+Tech Stack
+
+Node.js: Runtime environment.
+Express.js: Web framework for building the API.
+SQLite: Lightweight database using better-sqlite3.
+Zod: Schema validation and sanitization.
+Helmet: Security middleware for HTTP headers.
+CORS: Configurable Cross-Origin Resource Sharing.
+dotenv: Environment variable management.
+
+Prerequisites
+
+Node.js: Version 16 or higher.
+npm: Node package manager (comes with Node.js).
+SQLite: Ensure SQLite is installed or use the better-sqlite3 package which includes it.
+
+Installation
+
+Clone the repository:git clone <repository-url>
+cd <repository-directory>
+
+Install dependencies:npm install
+
+Configuration
+Create a .env file in the project root with the following variables:
+PORT=4000
+DB_PATH=./data/data.db
+ALLOWED_ORIGINS=http://localhost:3000,http://example.com
+NODE_ENV=development
+
+PORT: The port the server will run on (default: 4000).
+DB_PATH: Path to the SQLite database file.
+ALLOWED_ORIGINS: Comma-separated list of allowed CORS origins.
+NODE_ENV: Set to development for detailed error stack traces or production for minimal error output.
+
+Database Setup
+The project uses SQLite as the database. Ensure the database file specified in DB_PATH exists and has the following schema:
+CREATE TABLE users (
+id TEXT PRIMARY KEY,
+name TEXT NOT NULL,
+email TEXT NOT NULL UNIQUE
+);
+
+CREATE TABLE addresses (
+id TEXT PRIMARY KEY,
+user_id TEXT NOT NULL,
+street TEXT,
+city TEXT,
+country TEXT,
+FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+CREATE TABLE posts (
+id TEXT PRIMARY KEY,
+user_id TEXT NOT NULL,
+title TEXT NOT NULL,
+body TEXT NOT NULL,
+created_at TEXT NOT NULL,
+FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+You can initialize the database by running a script or manually creating the tables using an SQLite client.
+Running the Application
+
+Start the server:npm start
+
+The server will run at http://localhost:4000 (or the port specified in .env).
+Use a tool like Postman or cURL to test the API endpoints.
+
+API Endpoints
+Users
+
+GET /users
+
+Description: Retrieve a paginated list of users with their addresses.
+Query Parameters:
+page (optional, default: 1): Page number.
+limit (optional, default: 10): Number of users per page.
+
+Response:{
+"data": [{ "id": "1", "name": "John Doe", "email": "john@example.com", "address": {...} }, ...],
+"total": 50,
+"page": 1,
+"limit": 10,
+"totalPages": 5
+}
+
+GET /users/:userId
+
+Description: Retrieve details of a specific user by ID.
+Parameters:
+userId: The ID of the user.
+
+Response:{ "id": "1", "name": "John Doe", "email": "john@example.com" }
+
+GET /users/:userId/posts
+
+Description: Retrieve a paginated list of posts for a specific user.
+Parameters:
+userId: The ID of the user.
+
+Query Parameters:
+page (optional, default: 1): Page number.
+limit (optional, default: 10): Number of posts per page.
+
+Response:{
+"data": [{ "id": "1", "user_id": "1", "title": "Post Title", "body": "Post Body", "created_at": "2025-07-27T15:49:00Z" }, ...],
+"total": 20,
+"page": 1,
+"limit": 10,
+"totalPages": 2
+}
+
+Posts
+
+POST /posts
+
+Description: Create a new post for a user.
+Body:{
+"userId": "1",
+"title": "New Post",
+"body": "This is the post content"
+}
+
+Response (201 Created):{ "id": "123", "user_id": "1", "title": "New Post", "body": "This is the post content", "created_at": "2025-07-27T15:49:00Z" }
+
+DELETE /posts/:postId
+
+Description: Delete a post by ID.
+Parameters:
+postId: The ID of the post to delete.
+
+Response:{ "deleted": true }
+
+Error Handling
+The API includes a global error handler that returns structured error responses:
+{
+"status": 500,
+"message": "Internal Server Error",
+"method": "GET",
+"path": "/users",
+"timestamp": "2025-07-27T15:49:00Z",
+"stack": "Error: ... (only in development mode)"
+}
+
+Validation Errors: Returns 400 status with detailed error messages from Zod.
+Not Found: Returns 404 for missing users or posts.
+CORS Errors: Returns 403 for unauthorized origins.
+
+Contributing
+
+Fork the repository.
+Create a new branch (git checkout -b feature/your-feature).
+Commit your changes (git commit -m 'Add your feature').
+Push to the branch (git push origin feature/your-feature).
+Open a Pull Request.
+
+License
+This project is licensed under the MIT License.

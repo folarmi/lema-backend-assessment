@@ -1,22 +1,13 @@
-# Node.js + Express + TypeScript + SQLite Backend
+# Express + SQLite Backend API
 
-This is a simple backend server for handling blog posts and users, built with Express, TypeScript, and SQLite using `better-sqlite3`.
+This project is a RESTful backend built with Express.js and TypeScript. It uses SQLite (via better-sqlite3) as the database, with features including input validation using Zod, security headers via Helmet, and origin whitelisting using CORS. The application exposes endpoints for managing users and their posts, with pagination and proper error handling. To run the project, first create a `.env` file in the root directory and set the following environment variables: PORT (default is 4000), DB_PATH (default is ./data/data.db), and ALLOWED_ORIGINS (comma-separated list of whitelisted origins for CORS). Install dependencies using `npm install`, then start the server with `npm run dev` or `node dist/server.js` if compiled. The server will be available at http://localhost:4000 or the specified PORT.
 
-## 🚀 Features
+Available endpoints include GET /users for listing users with pagination (query parameters: page and limit), GET /users/:userId to fetch a single user by ID, GET /users/:userId/posts to list posts belonging to a user with pagination, POST /posts to create a new post (requires userId, title, and body in the request body), and DELETE /posts/:postId to delete a post. All input is validated with Zod, and error messages are descriptive and structured. The application applies Helmet for basic security best practices, and uses better-sqlite3 for synchronous and performant database access. User addresses are fetched from the addresses table and embedded into the user objects. If a user or post is not found, the API returns a 404 status code. All errors are caught by a global error handler which, in development mode, includes the stack trace in the response.
 
-- REST API (CRUD for Posts and Users)
-- SQLite database (embedded, no external setup)
-- Zod-based input validation
-- CORS protection with environment-based origin config
-- Secure headers with Helmet
-- Custom error handler
-- Timestamps for post creation (`created_at` field)
+The project structure includes a `data` folder for the SQLite database file, a `.env` file for configuration, and a `server.ts` file as the main entry point. The API uses Express’s JSON middleware, and CORS is configured to accept requests only from the allowed origins listed in the environment variables. Pagination logic is included for both users and posts endpoints, computing offset and total pages based on provided or default page and limit values. If invalid parameters are passed, the response includes a 400 status code and detailed validation errors. When creating a post, the server checks that the user exists before inserting the post into the database. Responses include metadata like total records, page number, limit, and totalPages to help clients implement pagination.
 
-## 🔧 Setup Instructions
+To use this project, ensure that the SQLite database is created and seeded with appropriate tables: users, posts, and addresses. The users table should contain at least id, name, and other basic fields. The posts table must contain id, user_id, title, body, and created_at. The addresses table should include user_id as a foreign key and fields like street, city, or zip. The API automatically attaches each user’s address from the addresses table when returning user data. The response from the POST /posts endpoint includes the full post record after insertion. All timestamps are in ISO 8601 format. The DELETE /posts/:postId endpoint returns whether a record was deleted based on the affected rows count.
 
-1. **Clone the repository and navigate into the backend folder:**
+This backend is ideal for lightweight applications or admin panels where simplicity, speed, and validation are required. It does not include authentication, but can be extended to do so. The entire project uses minimal dependencies for performance and maintainability. Example environment configuration: PORT=4000, DB_PATH=./data/data.db, ALLOWED_ORIGINS=http://localhost:3000,http://yourfrontend.com. Folder structure: the `data/` folder contains your SQLite file, and everything runs from a single `server.ts` or compiled JavaScript file. Error responses follow a consistent JSON format with keys for status, message, method, path, timestamp, and optional stack trace (in development mode only). CORS errors are descriptive and follow the standard Express error flow.
 
-```bash
-git clone https://github.com/folarmi/lema-backend-assessment.git
-cd lema-backend-assessment
-```
+MIT licensed. Free to use, modify, and distribute.

@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import { z } from "zod";
 import Database from "better-sqlite3";
 import helmet from "helmet";
+import { v4 as uuidv4 } from "uuid";
 
 type CountResult = { count: number };
 
@@ -21,7 +22,7 @@ app.use(express.json());
 
 app.use(
   cors({
-    origin: "https://lema-fullstack-app.vercel.app",
+    origin: ["https://lema-fullstack-app.vercel.app", "http://localhost:5173"],
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
@@ -212,16 +213,15 @@ app.post("/posts", (req: Request, res: Response, next: NextFunction) => {
     }
 
     const now = new Date().toISOString();
+    const uuid = uuidv4();
 
     const result = db
       .prepare(
-        "INSERT INTO posts (user_id, title, body, created_at) VALUES (?, ?, ?, ?)"
+        "INSERT INTO posts (id, user_id, title, body, created_at) VALUES (?, ?, ?, ?, ?)"
       )
-      .run(userId, title, body, now);
+      .run(uuid, userId, title, body, now);
 
-    const newPost = db
-      .prepare("SELECT * FROM posts WHERE id = ?")
-      .get(result.lastInsertRowid);
+    const newPost = db.prepare("SELECT * FROM posts WHERE id = ?").get(uuid);
 
     res.status(201).json(newPost);
   } catch (error) {
@@ -229,7 +229,6 @@ app.post("/posts", (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
-// Global error handler with stacktrace in development
 app.use((err: any, req: Request, res: Response, _next: NextFunction) => {
   console.error("Unhandled error:", err);
 
